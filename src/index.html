@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sitemap.xml generator v0.0.1</title>
+    <link rel="icon" href="favicon.png" type="image/x-icon">
+    <link rel="stylesheet" href="assets/styles/main.css" type="text/css">
+</head>
+<body class="light-theme">
+    <div class="container">
+        <div class="header__wrap">
+            <div class="header_left-side">
+                <h1>Simple sitemap.xml generator v0.0.1</h1>
+            </div>
+            <div class="header_right-side">
+                <div class="header_theme-toggler">
+                    <div class="theme-toggler__toggle"></div>
+                </div>
+            </div>
+        </div>
+        <div class="content__wrap">
+            <div class="wrap__first-step">
+                Select generation mode
+                <button class="btn btn__json">From json file</button>
+                <button class="btn btn__manual">Manually</button>
+            </div>
+            <div class="wrap__second-step json hidden">
+                <button class="btn btn__back">Back</button>
+                <div class="json-step__first">
+                    Put your json in textarea
+                    <label>
+                        <textarea></textarea>
+                    </label>
+                    or upload <code>.json</code> file
+                    <input type="file" accept="application/JSON" />
+                </div>
+                <div class="json-step__second">
+
+                </div>
+            </div>
+            <div class="wrap__second-step manually hidden">
+                <button class="btn btn__back">Back</button>
+            </div>
+        </div>
+        <div class="footer__wrap">
+            &copy; <span class="year-now"></span>
+        </div>
+    </div>
+</body>
+<!-- Main app script -->
+<script src="assets/js/main.js"></script>
+<!-- Theme light/dark script -->
+<script src="assets/js/theme.js"></script>
+<!-- Generator script -->
+<script src="assets/js/generator.js"></script>
+</html>

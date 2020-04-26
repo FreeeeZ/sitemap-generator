@@ -1,0 +1,86 @@
+/* Global styles start */
+
+/* Set Ubuntu font as global */
+@import '/src/assets/fonts/Ubuntu/Ubuntu.css';
+
+* {
+    font-family: 'Ubuntu', sans-serif;
+}
+
+body, .container {
+    min-height: calc(100vh - 10em);
+}
+
+.container {
+    padding-right: 15px;
+    padding-left: 15px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+@media (min-width: 768px) {
+    .container {
+        width: 750px;
+    }
+}
+
+@media (min-width: 992px) {
+    .container {
+        width: 970px;
+    }
+}
+
+@media (min-width: 1200px) {
+    .container {
+        width: 1170px;
+    }
+}
+
+.hidden {
+    display: none;
+}
+
+/* Global styles end */
+
+/* Header grid start */
+.header__wrap {
+    display: grid;
+    grid-template-areas: 'left-side right side';
+    grid-template-columns: 1fr 1fr;
+}
+
+.header__wrap .header_left-side { grid-area: left-side; }
+.header__wrap .header_right-side { grid-area: right-side; }
+/* Header grid end */
+
+/* Content grid start */
+.content__wrap {
+    min-height: calc(100vh - 10em);
+}
+/* Content grid end */
+
+/* Theme toggle start */
+.header__wrap .header_right-side .header_theme-toggler {
+    background-color: #6d6c6e;
+    height: 10px;
+    width: 20px;
+}
+
+.header__wrap .header_right-side .header_theme-toggler:hover {
+    cursor: pointer;
+}
+/* Theme toggle end */
+
+/* Light theme start */
+.light-theme {
+    background-color: #ffffff;
+    color: #000000;
+}
+/* Light theme end */
+
+/* Dark theme start */
+.dark-theme {
+    background-color: #020018;
+    color: #ffffff;
+}
+/* Dark theme end */
