@@ -7,17 +7,17 @@ let firstWrap = document.querySelector('.wrap__first-step');
 let secondWrapJson = document.querySelector('.wrap__second-step.json');
 let secondWrapManual = document.querySelector('.wrap__second-step.manually');
 
-jsonButton.onclick = function () {
+jsonButton.onclick = () => {
   firstWrap.classList.add('hidden');
   secondWrapJson.classList.remove('hidden');
 };
 
-manualButton.onclick = function () {
+manualButton.onclick = () => {
   firstWrap.classList.add('hidden');
   secondWrapManual.classList.remove('hidden');
 };
 
-backButton.onclick = function () {
+backButton.onclick = () => {
   firstWrap.classList.remove('hidden');
   secondWrapJson.classList.add('hidden');
   secondWrapManual.classList.add('hidden');
