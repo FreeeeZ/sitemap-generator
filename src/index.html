@@ -1,56 +1,167 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Sitemap.xml generator v0.0.1</title>
-    <link rel="icon" href="assets/favicons/favicon.png" type="image/x-icon">
-    <link rel="stylesheet" href="assets/styles/main.css" type="text/css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Генератор Sitemap.xml</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        .container {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        textarea {
+            width: 100%;
+            height: 200px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: vertical;
+            margin-bottom: 10px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .output {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e8f4fc;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+        .download-btn {
+            background-color: #27ae60;
+            margin-top: 10px;
+        }
+        .download-btn:hover {
+            background-color: #219653;
+        }
+        .instructions {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+        }
+    </style>
 </head>
-<body class="light-theme">
+<body>
+    <h1>Генератор Sitemap.xml</h1>
+    
     <div class="container">
-        <div class="header__wrap">
-            <div class="header_left-side">
-                <h1>Simple sitemap.xml generator v0.0.1</h1>
-            </div>
-            <div class="header_right-side">
-                <div class="header_theme-toggler">
-                    <div class="theme-toggler__toggle"></div>
-                </div>
-            </div>
+        <div class="instructions">
+            <h3>Инструкция:</h3>
+            <p>Введите список URL-адресов (по одному на строку), которые нужно включить в sitemap.xml.</p>
+            <p>Вы можете указать дополнительные параметры для каждого URL (необязательно):</p>
+            <p><strong>Формат:</strong> URL [частота изменений] [приоритет] [дата последнего изменения]</p>
+            <p><strong>Пример:</strong> https://example.com/page1 monthly 0.8 2023-01-01</p>
         </div>
-        <div class="content__wrap">
-            <div class="wrap__first-step">
-                Select generation mode
-                <button class="btn btn__json">From json file</button>
-                <button class="btn btn__manual">Manually</button>
-            </div>
-            <div class="wrap__second-step json hidden">
-                <button class="btn btn__back">Back</button>
-                <div class="json-step__first">
-                    Put your json in textarea
-                    <label>
-                        <textarea></textarea>
-                    </label>
-                    or upload <code>.json</code> file
-                    <input type="file" accept="application/JSON" />
-                </div>
-                <div class="json-step__second">
-
-                </div>
-            </div>
-            <div class="wrap__second-step manually hidden">
-                <button class="btn btn__back">Back</button>
-            </div>
-        </div>
-        <div class="footer__wrap">
-            &copy; <span class="year-now"></span>
+        
+        <textarea id="urls" placeholder="Введите URL-адреса, по одному на строку:
+https://example.com
+https://example.com/about
+https://example.com/contact monthly 0.8 2023-01-01"></textarea>
+        
+        <button id="generate">Сгенерировать Sitemap</button>
+        
+        <div class="output" id="output" style="display: none;">
+            <h3>Результат:</h3>
+            <pre id="sitemap-content"></pre>
+            <button id="download" class="download-btn">Скачать sitemap.xml</button>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const generateBtn = document.getElementById('generate');
+            const downloadBtn = document.getElementById('download');
+            const urlsTextarea = document.getElementById('urls');
+            const outputDiv = document.getElementById('output');
+            const sitemapContent = document.getElementById('sitemap-content');
+            
+            generateBtn.addEventListener('click', generateSitemap);
+            downloadBtn.addEventListener('click', downloadSitemap);
+            
+            function generateSitemap() {
+                const urls = urlsTextarea.value.trim().split('\n');
+                let sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
+                
+                for (let url of urls) {
+                    url = url.trim();
+                    if (!url) continue;
+                    
+                    // Разбиваем строку на части
+                    const parts = url.split(/\s+/);
+                    const loc = parts[0];
+                    const changefreq = parts[1] || 'weekly';
+                    const priority = parts[2] || '0.5';
+                    const lastmod = parts[3] || new Date().toISOString().split('T')[0];
+                    
+                    sitemap += `  <url>
+    <loc>${escapeXml(loc)}</loc>
+    <changefreq>${escapeXml(changefreq)}</changefreq>
+    <priority>${escapeXml(priority)}</priority>
+    <lastmod>${escapeXml(lastmod)}</lastmod>
+  </url>\n`;
+                }
+                
+                sitemap += '</urlset>';
+                sitemapContent.textContent = sitemap;
+                outputDiv.style.display = 'block';
+            }
+            
+            function downloadSitemap() {
+                const content = sitemapContent.textContent;
+                const blob = new Blob([content], { type: 'application/xml' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'sitemap.xml';
+                document.body.appendChild(a);
+                a.click();
+                
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, 0);
+            }
+            
+            function escapeXml(unsafe) {
+                return unsafe.replace(/[<>&'"]/g, function (c) {
+                    switch (c) {
+                        case '<': return '&lt;';
+                        case '>': return '&gt;';
+                        case '&': return '&amp;';
+                        case '\'': return '&apos;';
+                        case '"': return '&quot;';
+                        default: return c;
+                    }
+                });
+            }
+        });
+    </script>
 </body>
-<!-- Main app script -->
-<script src="assets/js/main.js"></script>
-<!-- Theme light/dark script -->
-<script src="assets/js/theme.js"></script>
-<!-- Generator script -->
-<script src="assets/js/generator.js"></script>
 </html>
