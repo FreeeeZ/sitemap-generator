@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Генератор Sitemap.xml</title>
+    <link rel="icon" type="image/png" href="./assets/favicons/favicon.png" />
+    <title>Sitemap.xml generator</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -40,8 +41,16 @@
             cursor: pointer;
             font-size: 16px;
         }
-        button:hover {
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+        button:hover:not(:disabled) {
             background-color: #2980b9;
+        }
+        .generate {
+            display: flex;
+            justify-content: center;
         }
         .output {
             margin-top: 20px;
@@ -50,6 +59,10 @@
             border-radius: 4px;
             white-space: pre-wrap;
             overflow-x: auto;
+        }
+        .output .output-button {
+            display: flex;
+            justify-content: center;
         }
         .download-btn {
             background-color: #27ae60;
@@ -64,104 +77,141 @@
             background-color: #f0f0f0;
             border-radius: 4px;
         }
+        .error {
+            color: #e74c3c;
+            margin-top: 5px;
+            display: none;
+        }
     </style>
 </head>
 <body>
-    <h1>Генератор Sitemap.xml</h1>
-    
-    <div class="container">
-        <div class="instructions">
-            <h3>Инструкция:</h3>
-            <p>Введите список URL-адресов (по одному на строку), которые нужно включить в sitemap.xml.</p>
-            <p>Вы можете указать дополнительные параметры для каждого URL (необязательно):</p>
-            <p><strong>Формат:</strong> URL [частота изменений] [приоритет] [дата последнего изменения]</p>
-            <p><strong>Пример:</strong> https://example.com/page1 monthly 0.8 2023-01-01</p>
-        </div>
-        
-        <textarea id="urls" placeholder="Введите URL-адреса, по одному на строку:
+<h1>Sitemap.xml generator</h1>
+
+<div class="container">
+    <div class="instructions">
+        <h3>Instructions:</h3>
+        <p>Enter a list of URLs (one per line) to include in your sitemap.xml.</p>
+        <p>You can specify additional parameters for each URL (optional):</p>
+        <p><strong>Format:</strong> URL [changefreq] [priority] [lastmod]</p>
+        <p><strong>Example:</strong> https://example.com/page1 monthly 0.8 2023-01-01</p>
+    </div>
+
+    <textarea id="urls" placeholder="Enter URLs, one per line:
 https://example.com
 https://example.com/about
 https://example.com/contact monthly 0.8 2023-01-01"></textarea>
-        
-        <button id="generate">Сгенерировать Sitemap</button>
-        
-        <div class="output" id="output" style="display: none;">
-            <h3>Результат:</h3>
-            <pre id="sitemap-content"></pre>
-            <button id="download" class="download-btn">Скачать sitemap.xml</button>
-        </div>
+    <div class="error" id="error">Please enter at least one URL</div>
+
+    <div class="generate">
+        <button id="generate" disabled>Generate Sitemap</button>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const generateBtn = document.getElementById('generate');
-            const downloadBtn = document.getElementById('download');
-            const urlsTextarea = document.getElementById('urls');
-            const outputDiv = document.getElementById('output');
-            const sitemapContent = document.getElementById('sitemap-content');
-            
-            generateBtn.addEventListener('click', generateSitemap);
-            downloadBtn.addEventListener('click', downloadSitemap);
-            
-            function generateSitemap() {
-                const urls = urlsTextarea.value.trim().split('\n');
-                let sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+    <div class="output" id="output" style="display: none;">
+        <h3>Result:</h3>
+        <pre id="sitemap-content"></pre>
+        <div class="output-button">
+            <button id="download" class="download-btn">Download sitemap.xml</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const generateBtn = document.getElementById('generate');
+        const downloadBtn = document.getElementById('download');
+        const urlsTextarea = document.getElementById('urls');
+        const outputDiv = document.getElementById('output');
+        const sitemapContent = document.getElementById('sitemap-content');
+        const errorDiv = document.getElementById('error');
+
+        urlsTextarea.addEventListener('input', validateInput);
+        generateBtn.addEventListener('click', generateSitemap);
+        downloadBtn.addEventListener('click', downloadSitemap);
+
+        function validateInput() {
+            const text = urlsTextarea.value.trim();
+            const hasContent = text.length > 0;
+
+            generateBtn.disabled = !hasContent;
+
+            if (!hasContent) {
+                errorDiv.style.display = 'block';
+            } else {
+                errorDiv.style.display = 'none';
+            }
+        }
+
+        function generateSitemap() {
+            const urls = urlsTextarea.value.trim().split('\n');
+            let validUrls = 0;
+
+            let sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
-                
-                for (let url of urls) {
-                    url = url.trim();
-                    if (!url) continue;
-                    
-                    // Разбиваем строку на части
-                    const parts = url.split(/\s+/);
-                    const loc = parts[0];
-                    const changefreq = parts[1] || 'weekly';
-                    const priority = parts[2] || '0.5';
-                    const lastmod = parts[3] || new Date().toISOString().split('T')[0];
-                    
-                    sitemap += `  <url>
+
+            for (let url of urls) {
+                url = url.trim();
+                if (!url) continue;
+
+                validUrls++;
+
+                // Split line into parts
+                const parts = url.split(/\s+/);
+                const loc = parts[0];
+                const changefreq = parts[1] || 'weekly';
+                const priority = parts[2] || '0.5';
+                const lastmod = parts[3] || new Date().toISOString().split('T')[0];
+
+                sitemap += `  <url>
     <loc>${escapeXml(loc)}</loc>
     <changefreq>${escapeXml(changefreq)}</changefreq>
     <priority>${escapeXml(priority)}</priority>
     <lastmod>${escapeXml(lastmod)}</lastmod>
   </url>\n`;
+            }
+
+            sitemap += '</urlset>';
+
+            if (validUrls === 0) {
+                errorDiv.textContent = 'Please enter at least one valid URL';
+                errorDiv.style.display = 'block';
+                outputDiv.style.display = 'none';
+                return;
+            }
+
+            sitemapContent.textContent = sitemap;
+            outputDiv.style.display = 'block';
+        }
+
+        function downloadSitemap() {
+            const content = sitemapContent.textContent;
+            const blob = new Blob([content], { type: 'application/xml' });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'sitemap.xml';
+            document.body.appendChild(a);
+            a.click();
+
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 0);
+        }
+
+        function escapeXml(unsafe) {
+            return unsafe.replace(/[<>&'"]/g, function (c) {
+                switch (c) {
+                    case '<': return '&lt;';
+                    case '>': return '&gt;';
+                    case '&': return '&amp;';
+                    case '\'': return '&apos;';
+                    case '"': return '&quot;';
+                    default: return c;
                 }
-                
-                sitemap += '</urlset>';
-                sitemapContent.textContent = sitemap;
-                outputDiv.style.display = 'block';
-            }
-            
-            function downloadSitemap() {
-                const content = sitemapContent.textContent;
-                const blob = new Blob([content], { type: 'application/xml' });
-                const url = URL.createObjectURL(blob);
-                
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'sitemap.xml';
-                document.body.appendChild(a);
-                a.click();
-                
-                setTimeout(() => {
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                }, 0);
-            }
-            
-            function escapeXml(unsafe) {
-                return unsafe.replace(/[<>&'"]/g, function (c) {
-                    switch (c) {
-                        case '<': return '&lt;';
-                        case '>': return '&gt;';
-                        case '&': return '&amp;';
-                        case '\'': return '&apos;';
-                        case '"': return '&quot;';
-                        default: return c;
-                    }
-                });
-            }
-        });
-    </script>
+            });
+        }
+    });
+</script>
 </body>
 </html>
