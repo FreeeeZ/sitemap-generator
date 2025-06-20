@@ -6,47 +6,90 @@
     <link rel="icon" type="image/png" href="./assets/favicons/favicon.png" />
     <title>Sitemap.xml generator</title>
     <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --container-bg: #f9f9f9;
+            --instructions-bg: #f0f0f0;
+            --output-bg: #e8f4fc;
+            --border-color: #ddd;
+            --primary-btn: #3498db;
+            --primary-btn-hover: #2980b9;
+            --disabled-btn: #95a5a6;
+            --download-btn: #27ae60;
+            --download-btn-hover: #219653;
+            --error-color: #e74c3c;
+            --toggle-bg: #e0e0e0;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #1a1a1a;
+            --text-color: #f0f0f0;
+            --container-bg: #2d2d2d;
+            --instructions-bg: #3d3d3d;
+            --output-bg: #1e3a5f;
+            --border-color: #444;
+            --primary-btn: #1a5276;
+            --primary-btn-hover: #154360;
+            --disabled-btn: #5d6d7e;
+            --download-btn: #196f3d;
+            --download-btn-hover: #145a32;
+            --error-color: #e74c3c;
+            --toggle-bg: #444;
+        }
+
         body {
             font-family: Arial, sans-serif;
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
             line-height: 1.6;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
         }
         h1 {
-            color: #2c3e50;
+            color: var(--text-color);
             text-align: center;
         }
         .container {
-            background-color: #f9f9f9;
+            background-color: var(--container-bg);
             border-radius: 8px;
             padding: 20px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: background-color 0.3s;
         }
         textarea {
             width: 100%;
             height: 200px;
             padding: 10px;
-            border: 1px solid #ddd;
+            border: 1px solid var(--border-color);
             border-radius: 4px;
             resize: vertical;
             margin-bottom: 10px;
+            background-color: var(--container-bg);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
         }
         button {
-            background-color: #3498db;
+            background-color: var(--primary-btn);
             color: white;
             border: none;
             padding: 10px 15px;
             border-radius: 4px;
             cursor: pointer;
             font-size: 16px;
+            transition: background-color 0.3s;
         }
         button:disabled {
-            background-color: #95a5a6;
+            background-color: var(--disabled-btn);
             cursor: not-allowed;
         }
         button:hover:not(:disabled) {
-            background-color: #2980b9;
+            background-color: var(--primary-btn-hover);
+        }
+        .urls {
+            display: flex;
         }
         .generate {
             display: flex;
@@ -55,36 +98,63 @@
         .output {
             margin-top: 20px;
             padding: 15px;
-            background-color: #e8f4fc;
+            background-color: var(--output-bg);
             border-radius: 4px;
-            white-space: pre-wrap;
             overflow-x: auto;
+            transition: background-color 0.3s;
         }
         .output .output-button {
             display: flex;
             justify-content: center;
         }
         .download-btn {
-            background-color: #27ae60;
+            background-color: var(--download-btn);
             margin-top: 10px;
         }
         .download-btn:hover {
-            background-color: #219653;
+            background-color: var(--download-btn-hover);
         }
         .instructions {
             margin-bottom: 20px;
             padding: 15px;
-            background-color: #f0f0f0;
+            background-color: var(--instructions-bg);
             border-radius: 4px;
+            transition: background-color 0.3s;
         }
         .error {
-            color: #e74c3c;
+            color: var(--error-color);
             margin-top: 5px;
             display: none;
+        }
+        .theme-toggle {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 15px;
+        }
+        .toggle-btn {
+            background-color: var(--toggle-bg);
+            border: none;
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background-color 0.3s;
+        }
+        .toggle-icon {
+            font-size: 18px;
         }
     </style>
 </head>
 <body>
+<div class="theme-toggle">
+    <button class="toggle-btn" id="themeToggle">
+        <span class="toggle-icon">🌙</span>
+        <span>Dark Mode</span>
+    </button>
+</div>
+
 <h1>Sitemap.xml generator</h1>
 
 <div class="container">
@@ -96,10 +166,12 @@
         <p><strong>Example:</strong> https://example.com/page1 monthly 0.8 2023-01-01</p>
     </div>
 
+    <div class="urls">
     <textarea id="urls" placeholder="Enter URLs, one per line:
 https://example.com
 https://example.com/about
 https://example.com/contact monthly 0.8 2023-01-01"></textarea>
+    </div>
     <div class="error" id="error">Please enter at least one URL</div>
 
     <div class="generate">
@@ -123,6 +195,53 @@ https://example.com/contact monthly 0.8 2023-01-01"></textarea>
         const outputDiv = document.getElementById('output');
         const sitemapContent = document.getElementById('sitemap-content');
         const errorDiv = document.getElementById('error');
+        const themeToggle = document.getElementById('themeToggle');
+        const toggleIcon = themeToggle.querySelector('.toggle-icon');
+        const toggleText = themeToggle.querySelector('span:not(.toggle-icon)');
+
+        function getSystemTheme() {
+            return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+                ? 'dark'
+                : 'light';
+        }
+
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+
+            if (theme === 'dark') {
+                toggleIcon.textContent = '☀️';
+                toggleText.textContent = 'Light Mode';
+            } else {
+                toggleIcon.textContent = '🌙';
+                toggleText.textContent = 'Dark Mode';
+            }
+        }
+
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const systemTheme = getSystemTheme();
+
+            const initialTheme = savedTheme || systemTheme;
+            setTheme(initialTheme);
+
+            if (!savedTheme) {
+                const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+                mediaQuery.addEventListener('change', (e) => {
+                    if (!localStorage.getItem('theme')) {
+                        setTheme(e.matches ? 'dark' : 'light');
+                    }
+                });
+            }
+        }
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            setTheme(newTheme);
+        });
+
+        initTheme();
 
         urlsTextarea.addEventListener('input', validateInput);
         generateBtn.addEventListener('click', generateSitemap);
@@ -154,7 +273,6 @@ https://example.com/contact monthly 0.8 2023-01-01"></textarea>
 
                 validUrls++;
 
-                // Split line into parts
                 const parts = url.split(/\s+/);
                 const loc = parts[0];
                 const changefreq = parts[1] || 'weekly';
