@@ -7,10 +7,10 @@
 
 ### 📋 Core Functionality
 - **Multi-URL Processing**  
-  Add multiple URLs (one per line) with optional parameters:
-  - https://example.com
-  - https://example.com/about yearly
-  - https://example.com/contact monthly 0.8 2023-01-01
+  - Add multiple URLs (one per line) with optional parameters:
+    - https://example.com
+    - https://example.com/about yearly
+    - https://example.com/contact monthly 0.8 2023-01-01
 
 - **Smart Validation**  
   - ✅ Real-time input checking  
